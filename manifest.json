@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Taiga Auto Tag from Custom Fields",
+  "name": "Taiga Custom",
   "version": "1.1",
-  "description": "Adiciona um botão que insere todas as tags baseadas nos campos personalizados da User Story ou Issue no Taiga",
+  "description": "Customização para o Taiga.io",
   "permissions": ["scripting", "activeTab"],
   "host_permissions": ["https://*.taiga.io/*", "https://taiga.io/*"],
   "content_scripts": [
@@ -12,6 +12,6 @@
     }
   ],
   "action": {
-    "default_title": "Taiga Tagger"
+    "default_title": "Taiga Custom"
   }
 }
