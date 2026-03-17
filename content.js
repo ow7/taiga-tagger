@@ -331,10 +331,22 @@
 
   function ensureCounterPanel(table) {
     if (state.panel && state.panel.isConnected) return state.panel;
+
+    const parent = table.parentNode;
+    const existing = parent.querySelectorAll(".taiga-issue-counter");
+    if (existing.length > 0) {
+      state.panel = existing[0];
+      for (let i = 1; i < existing.length; i++) existing[i].remove();
+      if (state.panel.nextSibling !== table) {
+        parent.insertBefore(state.panel, table);
+      }
+      return state.panel;
+    }
+
     ensureStyles();
     const panel = document.createElement("div");
     panel.className = "taiga-issue-counter";
-    table.parentNode.insertBefore(panel, table);
+    parent.insertBefore(panel, table);
     state.panel = panel;
     return panel;
   }
