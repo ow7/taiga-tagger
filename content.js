@@ -42,6 +42,45 @@
         }, timeout);
     });
 
+  // -------- helpers de descrição --------
+  async function inserirNaDescricao(html) {
+    const container = document.querySelector("tg-item-wysiwyg");
+    if (!container) return;
+
+    let editor = container.querySelector(".ck-editor__editable");
+    if (!editor) {
+      // Se não estiver em modo de edição, tenta clicar para editar
+      const display = container.querySelector(".wysiwyg");
+      if (display) {
+        display.click();
+        try {
+          editor = await waitForElement("tg-item-wysiwyg .ck-editor__editable", 5000);
+        } catch (e) {
+          console.error("Editor não apareceu");
+          return;
+        }
+      }
+    }
+
+    if (editor) {
+      editor.focus();
+      // Move o cursor para o final
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      // Insere o HTML
+      document.execCommand("insertHTML", false, html);
+      
+      // Dispara eventos para o Angular notar a mudança
+      editor.dispatchEvent(new Event("input", { bubbles: true }));
+      editor.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
   // -------- suas funções (tags) --------
   function getCustomFieldTags() {
     const camposDesejados = [
@@ -56,12 +95,18 @@
     const tags = [];
     atributos.forEach((attr) => {
       const labelEl = attr.querySelector(".custom-field-name");
-      const valorEl = attr.querySelector(".custom-field-value p");
+      const valorEl = attr.querySelector(".custom-field-value p, .custom-field-value select");
       if (labelEl && valorEl) {
         const tagLabel = labelEl.textContent.trim().toLowerCase();
-        const tagValor = valorEl.textContent.trim().toLowerCase();
-        if (camposDesejados.includes(tagLabel))
-          tags.push(`${tagLabel}:${tagValor}`);
+        let tagValor = "";
+        if (valorEl.tagName === "SELECT") {
+          tagValor = valorEl.options[valorEl.selectedIndex]?.text || "";
+        } else {
+          tagValor = valorEl.textContent.trim();
+        }
+        
+        if (tagValor && camposDesejados.includes(tagLabel))
+          tags.push(`${tagLabel}:${tagValor.toLowerCase()}`);
       }
     });
     return tags;
@@ -91,37 +136,109 @@
   }
 
   function adicionarBotaoGlobal() {
-    if (document.querySelector("#btn-incluir-tags")) return;
+    if (document.querySelector("#helper-taiga-container")) return;
     const container = document.querySelector(".custom-fields-header");
     if (!container) return;
 
-    const botao = document.createElement("button");
-    botao.id = "btn-incluir-tags";
-    botao.innerText = "Incluir tags";
-    botao.style.marginLeft = "12px";
-    botao.style.padding = "4px 8px";
-    botao.style.cursor = "pointer";
-    botao.style.background = "#e3e3e3";
+    const mainWrapper = document.createElement("div");
+    mainWrapper.id = "helper-taiga-container";
+    mainWrapper.style.display = "flex";
+    mainWrapper.style.flexDirection = "column";
+    mainWrapper.style.gap = "8px";
+    mainWrapper.style.padding = "10px";
+    mainWrapper.style.background = "#f9f9f9";
+    mainWrapper.style.border = "1px solid #ddd";
+    mainWrapper.style.marginTop = "10px";
+    mainWrapper.style.borderRadius = "4px";
+
+    const row1 = document.createElement("div");
+    row1.style.display = "flex";
+    row1.style.alignItems = "center";
+    row1.style.gap = "10px";
+
+    // Botão Incluir Tags
+    const btnTags = document.createElement("button");
+    btnTags.id = "btn-incluir-tags";
+    btnTags.innerText = "Incluir tags";
+    btnTags.className = "btn-small";
+    btnTags.style.background = "#e3e3e3";
+    btnTags.style.cursor = "pointer";
 
     const feedback = document.createElement("span");
     feedback.id = "feedback-incluir-tags";
-    feedback.style.marginLeft = "8px";
     feedback.style.color = "green";
     feedback.style.fontSize = "12px";
     feedback.style.display = "none";
     feedback.textContent = "✔ Tags adicionadas!";
 
-    botao.onclick = async () => {
-      botao.disabled = true;
+    btnTags.onclick = async () => {
+      btnTags.disabled = true;
       feedback.style.display = "none";
       const tags = getCustomFieldTags();
       for (const tag of tags) await adicionarTag(tag);
       feedback.style.display = "inline";
-      botao.disabled = false;
+      btnTags.disabled = false;
     };
 
-    container.appendChild(botao);
-    container.appendChild(feedback);
+    // Botão Não é Desenvolvimento
+    const btnNaoDev = document.createElement("button");
+    btnNaoDev.innerText = "Não é Desenvolvimento";
+    btnNaoDev.className = "btn-small";
+    btnNaoDev.style.background = "#ffcccc";
+    btnNaoDev.style.cursor = "pointer";
+    btnNaoDev.onclick = () => {
+      inserirNaDescricao("<hr><p> @#@#</p>");
+    };
+
+    row1.appendChild(btnTags);
+    row1.appendChild(btnNaoDev);
+    row1.appendChild(feedback);
+
+    // Campo Retorno ao Cliente
+    const row2 = document.createElement("div");
+    row2.style.display = "flex";
+    row2.style.alignItems = "center";
+    row2.style.gap = "10px";
+
+    const labelRetorno = document.createElement("span");
+    labelRetorno.innerText = "Retorno ao Cliente:";
+    labelRetorno.style.fontSize = "12px";
+    labelRetorno.style.fontWeight = "bold";
+
+    const inputRetorno = document.createElement("input");
+    inputRetorno.type = "text";
+    inputRetorno.placeholder = "Digite o retorno...";
+    inputRetorno.style.flex = "1";
+    inputRetorno.style.padding = "4px";
+    inputRetorno.style.fontSize = "12px";
+
+    const btnInserirRetorno = document.createElement("button");
+    btnInserirRetorno.innerText = "Inserir";
+    btnInserirRetorno.className = "btn-small";
+    btnInserirRetorno.style.background = "#ccffcc";
+    btnInserirRetorno.style.cursor = "pointer";
+    btnInserirRetorno.onclick = () => {
+      const texto = inputRetorno.value.trim();
+      if (texto) {
+        inserirNaDescricao(`<p> @#$ ${texto}</p>`);
+        inputRetorno.value = "";
+      }
+    };
+
+    inputRetorno.onkeydown = (e) => {
+      if (e.key === "Enter") {
+        btnInserirRetorno.click();
+      }
+    };
+
+    row2.appendChild(labelRetorno);
+    row2.appendChild(inputRetorno);
+    row2.appendChild(btnInserirRetorno);
+
+    mainWrapper.appendChild(row1);
+    mainWrapper.appendChild(row2);
+
+    container.parentElement.insertBefore(mainWrapper, container.nextSibling);
   }
 
   // instala o botão quando os campos aparecerem (throttled)
@@ -172,6 +289,7 @@
       .taiga-issue-counter .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .9; }
       .taiga-issue-counter .chip.total { font-weight: 600; border-color: rgba(0,0,0,0.15); background: rgba(0,0,0,0.06); }
       .taiga-issue-counter .spacer { flex: 0 0 100%; height: 0; }
+      .btn-small { padding: 4px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 12px; }
     `;
     document.head.appendChild(style);
   };
@@ -181,12 +299,10 @@
   }
 
   function visible(el) {
-    // rápido: ignora getComputedStyle; cobre display:none e ng-hide
     return el && el.offsetParent !== null && !el.classList.contains("ng-hide");
   }
 
   function getIssueRows(table) {
-    // linhas visíveis
     return Array.from(table.querySelectorAll(".row.table-main")).filter(
       visible,
     );
@@ -252,7 +368,7 @@
   function renderCounter(data) {
     const panel = ensureCounterPanel(state.table);
     const hash = makeHash(data);
-    if (hash === state.lastHash) return; // nada mudou → não re-renderiza
+    if (hash === state.lastHash) return;
     state.lastHash = hash;
 
     const { total, counts } = data;
@@ -292,9 +408,7 @@
       if (!state.table || !state.table.isConnected) return;
       const rows = getIssueRows(state.table);
       renderCounter(computeCounts(rows));
-    } catch (e) {
-      // silencioso para não travar
-    }
+    } catch (e) {}
   }, 250);
 
   function attachTableObserver(table) {
@@ -327,9 +441,7 @@
     try {
       const table = await waitForElement("section.issues-table", 15000);
       attachTableObserver(table);
-    } catch (_) {
-      // sem tabela nessa página
-    }
+    } catch (_) {}
   }
 
   // -------- link para Mission Control --------
@@ -344,7 +456,6 @@
     const navLeft = projectsDropdown.parentElement;
     if (!navLeft) return;
 
-    // Cria um wrapper similar ao Projects
     const wrapper = document.createElement("div");
     wrapper.className = "topnav-dropdown-wrapper";
     wrapper.id = "mission-control-wrapper";
@@ -368,7 +479,6 @@
       transition: color 0.2s;
     `;
 
-    // Ícone de foguete (SVG inline)
     const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     icon.setAttribute("class", "icon");
     icon.setAttribute("width", "18");
@@ -401,7 +511,6 @@
       link.style.color = "#999";
     });
 
-    // Insere logo após o Projects dropdown
     projectsDropdown.insertAdjacentElement("afterend", wrapper);
   }
 
@@ -419,12 +528,10 @@
     subtree: true,
   });
 
-  // re-boot quando trocar de rota/página (barato)
   let lastUrl = location.href;
   setInterval(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
-      // reseta estado e tenta re-anexar
       if (state.tableObserver) state.tableObserver.disconnect();
       state.tableObserver = null;
       state.table = null;
