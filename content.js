@@ -44,14 +44,7 @@
 
   // -------- suas funções (tags) --------
   function getCustomFieldTags() {
-    const camposDesejados = [
-      "produto",
-      "complexidade",
-      "stack",
-      "projeto",
-      "tipo",
-      "urgência",
-    ];
+    const camposDesejados = ["produto", "projeto", "stack", "prioridade"];
     const atributos = [...document.querySelectorAll(".custom-attribute")];
     const tags = [];
     atributos.forEach((attr) => {
@@ -60,8 +53,7 @@
       if (labelEl && valorEl) {
         const tagLabel = labelEl.textContent.trim().toLowerCase();
         const tagValor = valorEl.textContent.trim().toLowerCase();
-        if (camposDesejados.includes(tagLabel))
-          tags.push(`${tagLabel}:${tagValor}`);
+        if (camposDesejados.includes(tagLabel)) tags.push(tagValor);
       }
     });
     return tags;
