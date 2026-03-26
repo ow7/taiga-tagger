@@ -83,14 +83,7 @@
 
   // -------- suas funções (tags) --------
   function getCustomFieldTags() {
-    const camposDesejados = [
-      "produto",
-      "complexidade",
-      "stack",
-      "projeto",
-      "tipo",
-      "urgência",
-    ];
+    const camposDesejados = ["produto", "projeto", "stack", "prioridade"];
     const atributos = [...document.querySelectorAll(".custom-attribute")];
     const tags = [];
     atributos.forEach((attr) => {
@@ -98,15 +91,8 @@
       const valorEl = attr.querySelector(".custom-field-value p, .custom-field-value select");
       if (labelEl && valorEl) {
         const tagLabel = labelEl.textContent.trim().toLowerCase();
-        let tagValor = "";
-        if (valorEl.tagName === "SELECT") {
-          tagValor = valorEl.options[valorEl.selectedIndex]?.text || "";
-        } else {
-          tagValor = valorEl.textContent.trim();
-        }
-        
-        if (tagValor && camposDesejados.includes(tagLabel))
-          tags.push(`${tagLabel}:${tagValor.toLowerCase()}`);
+        const tagValor = valorEl.textContent.trim().toLowerCase();
+        if (camposDesejados.includes(tagLabel)) tags.push(tagValor);
       }
     });
     return tags;
