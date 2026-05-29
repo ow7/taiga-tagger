@@ -324,7 +324,7 @@
     }
   }
 
-  // -------- link para Mission Control --------
+  // -------- link para Abrir Portal --------
   function adicionarLinkMissionControl() {
     if (document.querySelector("#mission-control-link")) return;
 
@@ -346,7 +346,7 @@
     link.href = "https://mission-control-coral-nine.vercel.app/";
     link.target = "_blank";
     link.rel = "noopener noreferrer";
-    link.title = "Mission Control";
+    link.title = "Abrir Portal";
     link.className = "dropdown-project-list-projects";
     link.style.cssText = `
       display: flex;
@@ -360,7 +360,7 @@
       transition: color 0.2s;
     `;
 
-    // Ícone de foguete (SVG inline)
+    // Ícone da espada Hofund (SVG inline)
     const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     icon.setAttribute("class", "icon");
     icon.setAttribute("width", "18");
@@ -369,17 +369,44 @@
     icon.setAttribute("fill", "none");
     icon.setAttribute("stroke", "currentColor");
     icon.setAttribute("stroke-width", "2");
+    icon.setAttribute("stroke-linecap", "round");
+    icon.setAttribute("stroke-linejoin", "round");
     icon.style.cssText = "fill: none; stroke: currentColor;";
 
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute(
-      "d",
-      "M4.5 16.5c-1.5 1.5-2 5-.5 5.5s4-1 5.5-2.5L21 8c1-1 2-5 2-7s-6 1-7 2L4.5 16.5zM8.5 8.5l7 7M12 15l5 5",
-    );
-    icon.appendChild(path);
+    // Lâmina da espada
+    const blade = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    blade.setAttribute("x1", "12");
+    blade.setAttribute("y1", "2");
+    blade.setAttribute("x2", "12");
+    blade.setAttribute("y2", "16");
+    icon.appendChild(blade);
+
+    // Guarda (crossguard)
+    const guard = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    guard.setAttribute("x1", "8");
+    guard.setAttribute("y1", "16");
+    guard.setAttribute("x2", "16");
+    guard.setAttribute("y2", "16");
+    icon.appendChild(guard);
+
+    // Punho (grip)
+    const grip = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    grip.setAttribute("x1", "12");
+    grip.setAttribute("y1", "16");
+    grip.setAttribute("x2", "12");
+    grip.setAttribute("y2", "20");
+    icon.appendChild(grip);
+
+    // Pomo (pommel)
+    const pommel = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    pommel.setAttribute("cx", "12");
+    pommel.setAttribute("cy", "21");
+    pommel.setAttribute("r", "1");
+    pommel.setAttribute("fill", "currentColor");
+    icon.appendChild(pommel);
 
     const text = document.createElement("span");
-    text.textContent = "Mission Control";
+    text.textContent = "Abrir Portal";
 
     link.appendChild(icon);
     link.appendChild(text);
