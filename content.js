@@ -206,7 +206,27 @@
   }
 
   function ensureCounterPanel(table) {
-    if (state.panel && state.panel.isConnected) return state.panel;
+    // Remove painéis duplicados que possam existir
+    const existingPanels = table.parentNode.querySelectorAll(".taiga-issue-counter");
+    if (existingPanels.length > 1) {
+      existingPanels.forEach((p, i) => {
+        if (i > 0) p.remove(); // mantém apenas o primeiro
+      });
+    }
+
+    // Verifica se já existe um painel válido
+    if (state.panel && state.panel.isConnected && state.panel.parentNode === table.parentNode) {
+      return state.panel;
+    }
+
+    // Busca painel existente no DOM
+    const existingPanel = table.parentNode.querySelector(".taiga-issue-counter");
+    if (existingPanel) {
+      state.panel = existingPanel;
+      return existingPanel;
+    }
+
+    // Cria novo painel apenas se não existir nenhum
     ensureStyles();
     const panel = document.createElement("div");
     panel.className = "taiga-issue-counter";
